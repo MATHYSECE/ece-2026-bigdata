@@ -7,7 +7,9 @@ authors = [
     { name = "MATHYSECE", email = "mathys.picheretlarrousse@edu.ece.fr" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "faker>=40.39.0",
+]
 
 [project.scripts]
 work = "work:main"
