@@ -9,3 +9,5 @@ target/
 dbt_packages/
 logs/
 *.duckdb
+trino/deployment/charts/
+trino/deployment/Chart.lock
