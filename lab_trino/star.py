@@ -28,17 +28,15 @@ def show(title, statement):
     print(sql(statement).to_string())
 
 
-for t in ("fact_orders", "dim_user", "dim_product", "dim_date"):
-    sql(f"DROP TABLE IF EXISTS lakehouse.gold.{t}")
 
 sql("""
-    CREATE TABLE lakehouse.gold.dim_user AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.dim_user AS
     SELECT row_number() OVER (ORDER BY user_id) AS user_key,
            user_id, username, name, sex, birthdate, city, state, zip_code
     FROM lakehouse.silver.users
 """)
 sql("""
-    CREATE TABLE lakehouse.gold.dim_product AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.dim_product AS
     SELECT row_number() OVER (ORDER BY product) AS product_key, product
     FROM (SELECT DISTINCT product FROM lakehouse.silver.orders)
 """)
@@ -51,7 +49,7 @@ first_day, last_day = sql("""
 print("date range:", first_day, "->", last_day)
 
 sql(f"""
-    CREATE TABLE lakehouse.gold.dim_date AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.dim_date AS
     SELECT CAST(date_format(CAST(d AS timestamp), '%Y%m%d') AS integer) AS date_key,
            d AS full_date, year(d) AS year, quarter(d) AS quarter, month(d) AS month,
            date_format(CAST(d AS timestamp), '%M') AS month_name,
@@ -60,7 +58,7 @@ sql(f"""
 """)
 
 sql("""
-    CREATE TABLE lakehouse.gold.fact_orders AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.fact_orders AS
     SELECT o.order_id, u.user_key, p.product_key,
            CAST(date_format(o.ordered_at, '%Y%m%d') AS integer) AS date_key,
            o.ordered_at, o.quantity

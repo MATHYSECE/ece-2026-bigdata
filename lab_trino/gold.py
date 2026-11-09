@@ -73,9 +73,8 @@ print("\n== gold layer")
 sql("CREATE SCHEMA IF NOT EXISTS lakehouse.gold")
 show("schemas after create", "SHOW SCHEMAS FROM lakehouse")
 
-sql("DROP TABLE IF EXISTS lakehouse.gold.orders_by_state_month")
 sql("""
-    CREATE TABLE lakehouse.gold.orders_by_state_month AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.orders_by_state_month AS
     SELECT u.state, date_trunc('month', o.ordered_at) AS month,
            count(*) AS orders, sum(o.quantity) AS units, count(DISTINCT o.user_id) AS buyers
     FROM lakehouse.silver.orders AS o
@@ -84,18 +83,16 @@ sql("""
 """)
 show("orders_by_state_month", "SELECT * FROM lakehouse.gold.orders_by_state_month ORDER BY month, state LIMIT 10")
 
-sql("DROP TABLE IF EXISTS lakehouse.gold.top_products")
 sql("""
-    CREATE TABLE lakehouse.gold.top_products AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.top_products AS
     SELECT product, count(*) AS orders, sum(quantity) AS units,
            rank() OVER (ORDER BY sum(quantity) DESC) AS units_rank
     FROM lakehouse.silver.orders GROUP BY product
 """)
 show("top_products", "SELECT * FROM lakehouse.gold.top_products ORDER BY units_rank")
 
-sql("DROP TABLE IF EXISTS lakehouse.gold.user_activity")
 sql("""
-    CREATE TABLE lakehouse.gold.user_activity AS
+    CREATE TABLE IF NOT EXISTS lakehouse.gold.user_activity AS
     SELECT u.user_id, u.state, date_diff('year', u.birthdate, current_date) AS age,
            count(o.order_id) AS orders, coalesce(sum(o.quantity), 0) AS units,
            min(o.ordered_at) AS first_order_at, max(o.ordered_at) AS last_order_at
